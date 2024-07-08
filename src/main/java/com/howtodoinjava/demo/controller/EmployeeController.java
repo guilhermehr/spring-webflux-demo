@@ -1,5 +1,7 @@
 package com.howtodoinjava.demo.controller;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,8 +48,9 @@ public class EmployeeController {
  
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public Flux<Employee> findAll() {
+    public Flux<Employee> findAll() throws InterruptedException {
         Flux<Employee> emps = employeeService.findAll();
+        TimeUnit.SECONDS.sleep(1);
         return emps;
     }
  
@@ -62,5 +65,18 @@ public class EmployeeController {
     public void delete(@PathVariable("id") Integer id) {
         employeeService.delete(id).subscribe();
     }
+
+    @RequestMapping(value = { "/create/{max}" }, method = RequestMethod.POST)
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public void createMax(@PathVariable("max") Integer max) {
+        for (int i=1;i<max; i++) {
+            Employee emp = new Employee();
+            emp.setId(i);
+            emp.setName("user_" + i);
+            emp.setSalary(100 + i);
+            employeeService.create(emp);
+        }
+    }    
  
 }
